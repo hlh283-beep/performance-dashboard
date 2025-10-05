@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Management Dashboard</title>
+    <link rel="stylesheet" href="Style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+    <script src="config.js"></script>
+    <script src="data-validator.js"></script>
+</head>
+<body>
+    <!-- Navigation Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <img src="https://logo.clearbit.com/gusto.com" alt="Gusto" style="height: 32px; margin-right: 12px;">
+                <h1>Performance Dashboard</h1>
+            </div>
+            <div class="user-info">
+                <div class="user-profile">
+                    <span id="user-name">Loading...</span>
+                    <span id="user-role" class="role-badge">IC</span>
+                </div>
+                <button id="logout-btn" class="btn btn-secondary">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard -->
+    <main class="main-content">
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="ic-select">Individual Contributor:</label>
+                    <select id="ic-select" class="select-input">
+                        <option value="">Select IC...</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="month-select">Month:</label>
+                    <select id="month-select" class="select-input">
+                        <option value="">Current Month</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <button id="refresh-data" class="btn btn-primary">
+                        <i class="fas fa-sync-alt"></i> Refresh Data
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Manager Controls (hidden by default) -->
+            <div id="manager-controls" class="manager-controls" style="display: none;">
+                <button id="edit-goals-btn" class="btn btn-warning">
+                    <i class="fas fa-edit"></i> Edit Goals
+                </button>
+                <button id="add-development-goal" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Add Development Goal
+                </button>
+            </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- MTD Metrics Overview -->
+            <section class="dashboard-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-tachometer-alt"></i> MTD Performance Metrics</h2>
+                    <div class="section-actions">
+                        <button class="btn btn-sm btn-outline" onclick="toggleSection('mtd-metrics')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="mtd-metrics" class="metrics-grid">
+                    <!-- Metrics cards will be dynamically generated -->
+                </div>
+            </section>
+
+            <!-- MoM Trends -->
+            <section class="dashboard-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-chart-trend-up"></i> Month-over-Month Trends</h2>
+                    <div class="section-actions">
+                        <select id="trend-metric-select" class="select-input">
+                            <option value="all">All Metrics</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="trend-chart"></canvas>
+                </div>
+            </section>
+
+            <!-- AI Coaching -->
+            <section class="dashboard-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-robot"></i> AI-Powered Coaching</h2>
+                    <div class="coaching-status">
+                        <span id="coaching-status" class="status-indicator">Ready</span>
+                    </div>
+                </div>
+                <div id="coaching-content" class="coaching-content">
+                    <div class="coaching-placeholder">
+                        <i class="fas fa-lightbulb"></i>
+                        <p>Select a user to see personalized coaching recommendations</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Development Goals -->
+            <section class="dashboard-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-target"></i> Development Goals</h2>
+                    <button id="add-goal-btn" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i> Add Goal
+                    </button>
+                </div>
+                <div id="development-goals" class="goals-container">
+                    <!-- Goals will be dynamically generated -->
+                </div>
+            </section>
+
+            <!-- tNPS Surveys -->
+            <section class="dashboard-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-comments"></i> Recent tNPS Surveys</h2>
+                    <div class="tnps-score">
+                        <span id="current-tnps">--</span>
+                        <small>Current Score</small>
+                    </div>
+                </div>
+                <div id="tnps-content" class="tnps-content">
+                    <!-- tNPS surveys and actions will be generated -->
+                </div>
+            </section>
+
+            <!-- Data Sources Status -->
+            <section class="dashboard-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-database"></i> Data Sources</h2>
+                    <button id="sync-all-sources" class="btn btn-sm btn-outline">
+                        <i class="fas fa-sync"></i> Sync All
+                    </button>
+                </div>
+                <div id="data-sources" class="data-sources-grid">
+                    <div class="data-source">
+                        <i class="fab fa-google"></i>
+                        <span>Google Sheets</span>
+                        <div class="status-indicator status-connected" id="google-status">Connected</div>
+                    </div>
+                    <div class="data-source">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Tableau</span>
+                        <div class="status-indicator status-disconnected" id="tableau-status">Connecting...</div>
+                    </div>
+                    <div class="data-source">
+                        <i class="fas fa-database"></i>
+                        <span>Redash</span>
+                        <div class="status-indicator status-disconnected" id="redash-status">Connecting...</div>
+                    </div>
+                    <div class="data-source">
+                        <i class="fab fa-salesforce"></i>
+                        <span>Salesforce</span>
+                        <div class="status-indicator status-disconnected" id="salesforce-status">Connecting...</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <!-- Goal Editor Modal -->
+    <div id="goal-editor-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Performance Goals</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="goals-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="adh-goal">ADH Goal (%):</label>
+                            <input type="number" id="adh-goal" name="adh" value="85" min="0" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label for="weighted-sph-goal">Weighted SPH Goal:</label>
+                            <input type="number" id="weighted-sph-goal" name="weighted_sph" value="100" min="0" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="email-sph-goal">Email SPH Goal:</label>
+                            <input type="number" id="email-sph-goal" name="email_sph" value="2.1" min="0" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone-sph-goal">Phone SPH Goal:</label>
+                            <input type="number" id="phone-sph-goal" name="phone_sph" value="3.5" min="0" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="chat-sph-goal">Chat SPH Goal:</label>
+                            <input type="number" id="chat-sph-goal" name="chat_sph" value="2.9" min="0" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="tnps-goal">tNPS Goal:</label>
+                            <input type="number" id="tnps-goal" name="tnps" value="57" min="0" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label for="qa-goal">QA Score Goal (%):</label>
+                            <input type="number" id="qa-goal" name="qa_score" value="92" min="0" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label for="call-refusals-goal">Call Refusals Goal (max):</label>
+                            <input type="number" id="call-refusals-goal" name="call_refusals" value="10" min="0">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('goal-editor-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveGoals()">Save Goals</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Development Goal Modal -->
+    <div id="dev-goal-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Development Goal</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="dev-goal-form">
+                    <div class="form-group">
+                        <label for="goal-title">Goal Title:</label>
+                        <input type="text" id="goal-title" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="goal-description">Description:</label>
+                        <textarea id="goal-description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="goal-target-date">Target Date:</label>
+                        <input type="date" id="goal-target-date" name="target_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="goal-priority">Priority:</label>
+                        <select id="goal-priority" name="priority">
+                            <option value="high">High</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('dev-goal-modal')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveDevelopmentGoal()">Add Goal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p>Loading dashboard data...</p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
