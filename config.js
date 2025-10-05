@@ -9,7 +9,7 @@ window.DASHBOARD_CONFIG = {
     endpoints: {
         // GOOGLE SHEETS CONFIGURATION  
         // Direct Google Apps Script URL - Replace with YOUR script URL
-        googleSheets: 'https://script.google.com/a/macros/gusto.com/s/AKfycbxC2QYsyDnu7m__DvEXV36jDyJiZ07Gh6FL59X2QS8z8zoDYnpWvclhCK4HqV7n-1-X/exec',
+        googleSheets: 'https://script.google.com/a/macros/gusto.com/s/AKfycbxcRym6pZX4k9dXY5XTjHAUB5oLHYN50QdyAOUpMtzkFaq8YIjPCQcO1nOYW8Bho1Y7/exec',
         
         // TABLEAU CONFIGURATION
         tableau: {
